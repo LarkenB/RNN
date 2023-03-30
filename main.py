@@ -60,32 +60,6 @@ def train(decoder, criterion, decoder_optimizer, inp, target):
     return loss.data / CHUNK_LEN
 
 
-def generate(decoder, prime_str='A', predict_len=100, temperature=0.8):
-    hidden = decoder.init_hidden(1)
-    prime_input = char_tensor(prime_str).unsqueeze(0)
-    predicted = prime_str
-
-    # Use priming string to "build up" hidden state
-    for p in range(len(prime_str) - 1):
-        _, hidden = decoder(prime_input[:, p], hidden)
-
-    inp = prime_input[:, -1]
-
-    for p in range(predict_len):
-        output, hidden = decoder(inp, hidden)
-
-        # Sample from the network as a multinomial distribution
-        output_dist = output.data.view(-1).div(temperature).exp()
-        top_i = torch.multinomial(output_dist, 1)[0]
-
-        # Add predicted character to string and use as next input
-        predicted_char = ALL_CHARS[top_i]
-        predicted += predicted_char
-        inp = char_tensor(predicted_char).unsqueeze(0)
-
-    return predicted
-
-
 def main():
 
     decoder = CharRNN(
@@ -108,7 +82,7 @@ def main():
         print(f'Epoch: {epoch} | Loss: {loss}')
         loss_avg += loss
 
-    print(generate(decoder, prime_str="QUEEN:"))
+    print(decoder.generate(start="QUEEN:"))
 
 
 if __name__ == '__main__':
