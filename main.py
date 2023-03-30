@@ -27,11 +27,13 @@ def read_file(filename):
 
 def char_tensor(string):
     tensor = torch.zeros(len(string)).long()
+    #for c in range(len(string)):
+    #    try:
+    #        tensor[c] = ALL_CHARS.index(string[c])
+    #    except:
+    #        continue
     for c in range(len(string)):
-        try:
-            tensor[c] = ALL_CHARS.index(string[c])
-        except:
-            continue
+        tensor[c] = ALL_CHARS.index(string[c])
     return tensor
 
 

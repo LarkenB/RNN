@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-from torch.autograd import Variable
 
 
 class CharRNN(nn.Module):
@@ -22,11 +21,5 @@ class CharRNN(nn.Module):
         output = self.decoder(output.view(batch_size, -1))
         return output, hidden
 
-    # def forward2(self, input, hidden):
-    #     encoded = self.encoder(input.view(1, -1))
-    #     output, hidden = self.rnn(encoded.view(1, 1, -1), hidden)
-    #     output = self.decoder(output.view(1, -1))
-    #     return output, hidden
-
     def init_hidden(self, batch_size):
-        return Variable(torch.zeros(self.n_layers, batch_size, self.hidden_size))
+        return torch.zeros(self.n_layers, batch_size, self.hidden_size)
