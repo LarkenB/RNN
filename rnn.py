@@ -3,8 +3,7 @@ import string
 import torch
 import torch.nn as nn
 
-#ALL_CHARS = string.printable
-CHUNK_LEN = 200
+SEQ_SIZE = 200
 BATCH_SIZE = 100
 
 
@@ -15,17 +14,13 @@ BATCH_SIZE = 100
 class CharRNN(nn.Module):
     def __init__(self, vocab, hidden_size, n_layers):
         super(CharRNN, self).__init__()
-        input_size = len(vocab)
-        output_size = len(vocab)
         self.vocab = list(vocab)
-        self.input_size = input_size
         self.hidden_size = hidden_size
-        self.output_size = output_size
         self.n_layers = n_layers
 
-        self.encoder = nn.Embedding(input_size, hidden_size)
-        self.rnn = nn.GRU(hidden_size, hidden_size, n_layers)
-        self.fc = nn.Linear(hidden_size, output_size)
+        self.encoder = nn.Embedding(len(vocab), hidden_size)
+        self.rnn = nn.RNN(hidden_size, hidden_size, n_layers)
+        self.fc = nn.Linear(hidden_size, len(vocab))
 
     def forward(self, input, hidden):
         batch_size = input.size(0)
@@ -37,11 +32,8 @@ class CharRNN(nn.Module):
     def init_hidden(self, batch_size):
         return torch.zeros(self.n_layers, batch_size, self.hidden_size)
 
-    def char_tensor(self, string):
-        tensor = torch.zeros(len(string)).long()
-        for c in range(len(string)):
-            tensor[c] = self.vocab.index(string[c])
-        return tensor
+    def char_tensor(self, text):
+        return torch.tensor([self.vocab.index(c) for c in text])
 
     def random_training_set(self, data, chunk_len, batch_size):
         data_len = len(data)
@@ -60,7 +52,7 @@ class CharRNN(nn.Module):
         optimizer = torch.optim.Adam(self.parameters(), lr=learn_rate)
         criterion = nn.CrossEntropyLoss()
         for epoch in range(n_epochs):
-            inp, target = self.random_training_set(data, CHUNK_LEN, BATCH_SIZE)
+            inp, target = self.random_training_set(data, SEQ_SIZE, BATCH_SIZE)
             loss = self.epoch(criterion, optimizer, inp, target)
             print(f'Epoch: {epoch}/{n_epochs} | Loss: {loss}')
         return
@@ -71,14 +63,14 @@ class CharRNN(nn.Module):
         self.zero_grad()
         loss = 0
 
-        for c in range(CHUNK_LEN):
+        for c in range(SEQ_SIZE):
             output, hidden = self(inp[:, c], hidden)
             loss += criterion(output.view(BATCH_SIZE, -1), target[:, c])
 
         loss.backward()
         optimizer.step()
 
-        return loss.data / CHUNK_LEN
+        return loss.data / SEQ_SIZE
 
     def generate(self, start='QUEEN:', predict_len=100, temperature=0.8):
         hidden = self.init_hidden(1)

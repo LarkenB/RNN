@@ -1,27 +1,20 @@
-import string
 from rnn import CharRNN
 
-
-N_EPOCHS = 64
-CHUNK_LEN = 200
-BATCH_SIZE = 100
-FILENAME = "data/tiny-shakespeare.txt"
-LEARN_RATE = 0.01
 HIDDEN_SIZE = 100
 N_LAYERS = 2
-ALL_CHARS = string.printable
-N_CHARS = len(ALL_CHARS)
+LEARN_RATE = 0.01
+N_EPOCHS = 60
 
 
-def read_file(filename):
-    file = open(filename, 'r', encoding='utf-8')
+def read_shakespeare(path="data/tiny-shakespeare.txt"):
+    file = open(path, 'r', encoding='utf-8')
     data = file.read()
     file.close()
     return data
 
 
 def main():
-    data = read_file(FILENAME)
+    data = read_shakespeare()
     vocab = set(data)
 
     model = CharRNN(
