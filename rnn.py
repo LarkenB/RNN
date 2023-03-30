@@ -1,9 +1,11 @@
+import random
 import string
-
 import torch
 import torch.nn as nn
 
 ALL_CHARS = string.printable
+CHUNK_LEN = 200
+BATCH_SIZE = 100
 
 
 class CharRNN(nn.Module):
@@ -34,6 +36,43 @@ class CharRNN(nn.Module):
         for c in range(len(string)):
             tensor[c] = ALL_CHARS.index(string[c])
         return tensor
+
+    def random_training_set(self, data, chunk_len, batch_size):
+        data_len = len(data)
+        inp = torch.LongTensor(batch_size, chunk_len)
+        target = torch.LongTensor(batch_size, chunk_len)
+        for bi in range(batch_size):
+            start_index = random.randint(0, data_len - chunk_len)
+            end_index = start_index + chunk_len + 1
+            chunk = data[start_index:end_index]
+            inp[bi] = self.char_tensor(chunk[:-1])
+            target[bi] = self.char_tensor(chunk[1:])
+
+        return inp, target
+
+    def learn(self, data, n_epochs, learn_rate):
+        optimizer = torch.optim.Adam(self.parameters(), lr=learn_rate)
+        criterion = nn.CrossEntropyLoss()
+        for epoch in range(n_epochs):
+            inp, target = self.random_training_set(data, CHUNK_LEN, BATCH_SIZE)
+            loss = self.epoch(criterion, optimizer, inp, target)
+            print(f'Epoch: {epoch}/{n_epochs} | Loss: {loss}')
+        return
+
+    def epoch(self, criterion, optimizer, inp, target):
+        hidden = self.init_hidden(BATCH_SIZE)
+
+        self.zero_grad()
+        loss = 0
+
+        for c in range(CHUNK_LEN):
+            output, hidden = self(inp[:, c], hidden)
+            loss += criterion(output.view(BATCH_SIZE, -1), target[:, c])
+
+        loss.backward()
+        optimizer.step()
+
+        return loss.data / CHUNK_LEN
 
     def generate(self, start='QUEEN:', predict_len=100, temperature=0.8):
         hidden = self.init_hidden(1)
