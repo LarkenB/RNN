@@ -8,6 +8,10 @@ CHUNK_LEN = 200
 BATCH_SIZE = 100
 
 
+# TODO: Fix loss and how its handled, add comments, refactor var names,
+#       change whatever else as needed, remove string dependency
+
+
 class CharRNN(nn.Module):
     def __init__(self, input_size, hidden_size, output_size, n_layers=1):
         super(CharRNN, self).__init__()
@@ -18,13 +22,13 @@ class CharRNN(nn.Module):
 
         self.encoder = nn.Embedding(input_size, hidden_size)
         self.rnn = nn.GRU(hidden_size, hidden_size, n_layers)
-        self.decoder = nn.Linear(hidden_size, output_size)
+        self.fc = nn.Linear(hidden_size, output_size)
 
     def forward(self, input, hidden):
         batch_size = input.size(0)
         encoded = self.encoder(input)
         output, hidden = self.rnn(encoded.view(1, batch_size, -1), hidden)
-        output = self.decoder(output.view(batch_size, -1))
+        output = self.fc(output.view(batch_size, -1))
         return output, hidden
 
     def init_hidden(self, batch_size):

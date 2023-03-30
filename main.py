@@ -21,7 +21,6 @@ def read_file(filename):
 
 
 def main():
-
     model = CharRNN(
         N_CHARS,
         HIDDEN_SIZE,
