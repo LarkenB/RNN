@@ -5,7 +5,6 @@ import torch
 import torch.nn as nn
 from torch.autograd import Variable
 import random
-import unidecode
 
 
 N_EPOCHS = 64
@@ -20,8 +19,10 @@ N_CHARS = len(ALL_CHARS)
 
 
 def read_file(filename):
-    file = unidecode.unidecode(open(filename).read())
-    return file, len(file)
+    file = open(filename, 'r', encoding='utf-8')
+    data = file.read()
+    file.close()
+    return data, len(data)
 
 
 def char_tensor(string):
