@@ -8,7 +8,7 @@ import random
 import unidecode
 
 
-N_EPOCHS = 150
+N_EPOCHS = 64
 CHUNK_LEN = 200
 BATCH_SIZE = 100
 FILENAME = "data/tiny-shakespeare.txt"
@@ -97,7 +97,6 @@ def main():
         N_CHARS,
         HIDDEN_SIZE,
         N_CHARS,
-        model="gru",
         n_layers=N_LAYERS,
     )
     decoder_optimizer = torch.optim.Adam(decoder.parameters(), lr=LEARN_RATE)
