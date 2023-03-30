@@ -3,7 +3,6 @@ from random import random
 from rnn import CharRNN
 import torch
 import torch.nn as nn
-from torch.autograd import Variable
 import random
 
 
@@ -27,11 +26,6 @@ def read_file(filename):
 
 def char_tensor(string):
     tensor = torch.zeros(len(string)).long()
-    #for c in range(len(string)):
-    #    try:
-    #        tensor[c] = ALL_CHARS.index(string[c])
-    #    except:
-    #        continue
     for c in range(len(string)):
         tensor[c] = ALL_CHARS.index(string[c])
     return tensor
@@ -46,8 +40,6 @@ def random_training_set(file, file_len, chunk_len, batch_size):
         chunk = file[start_index:end_index]
         inp[bi] = char_tensor(chunk[:-1])
         target[bi] = char_tensor(chunk[1:])
-    inp = Variable(inp)
-    target = Variable(target)
 
     return inp, target
 
@@ -70,7 +62,7 @@ def train(decoder, criterion, decoder_optimizer, inp, target):
 
 def generate(decoder, prime_str='A', predict_len=100, temperature=0.8):
     hidden = decoder.init_hidden(1)
-    prime_input = Variable(char_tensor(prime_str).unsqueeze(0))
+    prime_input = char_tensor(prime_str).unsqueeze(0)
     predicted = prime_str
 
     # Use priming string to "build up" hidden state
@@ -89,7 +81,7 @@ def generate(decoder, prime_str='A', predict_len=100, temperature=0.8):
         # Add predicted character to string and use as next input
         predicted_char = ALL_CHARS[top_i]
         predicted += predicted_char
-        inp = Variable(char_tensor(predicted_char).unsqueeze(0))
+        inp = char_tensor(predicted_char).unsqueeze(0)
 
     return predicted
 
