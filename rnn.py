@@ -3,7 +3,7 @@ import string
 import torch
 import torch.nn as nn
 
-ALL_CHARS = string.printable
+#ALL_CHARS = string.printable
 CHUNK_LEN = 200
 BATCH_SIZE = 100
 
@@ -13,8 +13,11 @@ BATCH_SIZE = 100
 
 
 class CharRNN(nn.Module):
-    def __init__(self, input_size, hidden_size, output_size, n_layers=1):
+    def __init__(self, vocab, hidden_size, n_layers):
         super(CharRNN, self).__init__()
+        input_size = len(vocab)
+        output_size = len(vocab)
+        self.vocab = list(vocab)
         self.input_size = input_size
         self.hidden_size = hidden_size
         self.output_size = output_size
@@ -34,11 +37,10 @@ class CharRNN(nn.Module):
     def init_hidden(self, batch_size):
         return torch.zeros(self.n_layers, batch_size, self.hidden_size)
 
-    @staticmethod
-    def char_tensor(string):
+    def char_tensor(self, string):
         tensor = torch.zeros(len(string)).long()
         for c in range(len(string)):
-            tensor[c] = ALL_CHARS.index(string[c])
+            tensor[c] = self.vocab.index(string[c])
         return tensor
 
     def random_training_set(self, data, chunk_len, batch_size):
@@ -97,7 +99,7 @@ class CharRNN(nn.Module):
             top_i = torch.multinomial(output_dist, 1)[0]
 
             # Add predicted character to string and use as next input
-            predicted_char = ALL_CHARS[top_i]
+            predicted_char = self.vocab[top_i]
             predicted += predicted_char
             inp = self.char_tensor(predicted_char).unsqueeze(0)
 

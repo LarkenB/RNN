@@ -21,14 +21,15 @@ def read_file(filename):
 
 
 def main():
+    data = read_file(FILENAME)
+    vocab = set(data)
+
     model = CharRNN(
-        N_CHARS,
+        vocab,
         HIDDEN_SIZE,
-        N_CHARS,
-        n_layers=N_LAYERS,
+        N_LAYERS,
     )
 
-    data = read_file(FILENAME)
     model.learn(data, N_EPOCHS, LEARN_RATE)
     print(model.generate(start="QUEEN:"))
 
